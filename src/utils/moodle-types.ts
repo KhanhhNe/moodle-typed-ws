@@ -13,7 +13,7 @@ import type {
   String as ASTString,
 } from 'php-parser'
 
-import { path as ramdaPath } from 'ramda'
+import path from 'ramda/src/path'
 
 import {
   RequiredType,
@@ -92,7 +92,7 @@ export const typeRelaxChecked = <T extends keyof TypeMap>(
   node: any,
   type: T,
 ): TypeMap[T] | undefined => {
-  if (ramdaPath(['kind'], node) === type) {
+  if (path(['kind'], node) === type) {
     return node as unknown as TypeMap[T]
   }
   return undefined
@@ -105,14 +105,11 @@ export const typeChecked = <T extends keyof TypeMap>(
     return node as unknown as TypeMap[T]
   }
   throw new Error(
-    `Type check failed - ${type} expected but ${ramdaPath(
-      ['kind'],
-      node,
-    )} found`,
+    `Type check failed - ${type} expected but ${path(['kind'], node)} found`,
   )
 }
 export const isType =
   <T extends keyof TypeMap>(type: T) =>
   (node: any): node is TypeMap[T] =>
-    ramdaPath(['kind'], node) === type
+    path(['kind'], node) === type
 /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */

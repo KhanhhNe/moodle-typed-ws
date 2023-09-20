@@ -1,16 +1,37 @@
 {
-  "name": "moodle-ws-client",
+  "name": "moodle-typed-ws",
+  "description": "A Moodle Web Service client library for TypeScript, fully typed.",
+  "author": {
+    "name": "KhanhhNe",
+    "url": "https://github.com/KhanhhNe"
+  },
   "version": "0.1.0",
   "engines.node": ">=18.0.0",
   "private": true,
+  "sideEffects": false,
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "parse": "bun src/parse/index.ts",
-    "format": "bun eslint --fix . && prettier --write ."
+    "clean": "rm -rf dist src/data src/moodle",
+    "build": "rm -rf dist ; bun tsc -d --outdir dist",
+    "clone": "[ -d src/moodle ] || git clone https://github.com/moodle/moodle src/moodle --depth=1",
+    "parse": "bash src/parse/get-files.sh && bun src/parse/index.ts",
+    "format": "bun eslint --fix . && prettier --write .",
+    "prepare": "bun clone && bun parse && bun run build",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "object-to-formdata": "^4.5.1"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.2",
     "@types/node": "^18.16.0",
     "@types/ramda": "^0.29.4",
+    "@types/rollup": "^0.54.0",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "bun-types": "^1.0.2",
@@ -28,5 +49,12 @@
   },
   "ct3aMetadata": {
     "initVersion": "7.19.0"
-  }
+  },
+  "keywords": [
+    "moodle",
+    "moodle web service",
+    "moodle client",
+    "moodle ws",
+    "typescript"
+  ]
 }

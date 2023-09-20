@@ -6,20 +6,9 @@
 .pnp.js
 .pnpm-store
 
-# testing
-/coverage
-
-# database
-/prisma/db.sqlite
-/prisma/db.sqlite-journal
-
-# next.js
-/.next/
-/out/
-next-env.d.ts
-
 # production
-/build
+build/
+dist/
 
 # misc
 .DS_Store

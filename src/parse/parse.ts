@@ -65,8 +65,8 @@ export const parseMoodleSourceCode = () => {
     try {
       const { package: packagePath, functions } = parseContent(
         parser,
-        fs.readFileSync(getAbsPath(line), 'utf-8'),
-        `src/${line}`,
+        fs.readFileSync(getAbsPath(`../${line}`), 'utf-8'),
+        line,
       )
       if (types.has(packagePath)) {
         types.set(packagePath, {

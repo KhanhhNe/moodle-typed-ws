@@ -3,10 +3,11 @@ import path from 'path'
 import { exec } from 'child_process'
 
 import { compile } from 'json-schema-to-typescript'
-import { assocPath } from 'ramda'
+import assocPath from 'ramda/src/assocPath'
 
 import { RequiredType, VariableType } from '~/utils/moodle-source-schemas'
 import { type ParseResult, type ParsedVariable } from '~/utils/moodle-types'
+import { camelCase } from '~/utils/string'
 
 type MoodleTypingAnnotation = {
   [key: string]: string | MoodleTypingAnnotation
@@ -24,6 +25,8 @@ export const moodleTypesToJson = async () => {
   const moodlePackages = moodleTypes
   let resultObject: MoodleTypingAnnotation = {}
   const imports: string[] = []
+  const exports: string[] = []
+  const namespaceName = 'MoodleClientFunctionTypes'
 
   for (const moodlePackage of moodlePackages) {
     for (const [name, func] of Object.entries(moodlePackage.functions)) {
@@ -31,36 +34,32 @@ export const moodleTypesToJson = async () => {
       const funcCamelCase = camelCase(
         `_${moodlePackage.package.join('_')}_${name}`,
       )
-      let paramsType = 'any'
-      let returnType = 'any'
+      let paramsType = 'AnyType'
+      let returnType = 'AnyType'
 
       if (func.params) {
         paramsType = `${funcCamelCase}ParamsType`
-        imports.push(`import type { ${paramsType} } from './${paramsType}'`)
-
-        void compile(parseType(func.params), paramsType, {
-          additionalProperties: false,
-          bannerComment: '',
-        }).then((result) =>
-          fs.writeFile(getAbsPath(`data/types/${paramsType}.d.ts`), result),
+        imports.push(
+          `import type { ${paramsType} as _${paramsType} } from './${paramsType}'`,
         )
+        exports.push(paramsType)
+
+        void compileType(func.params, paramsType)
       }
 
       if (func.returnType) {
         returnType = `${funcCamelCase}ReturnType`
-        imports.push(`import type { ${returnType} } from './${returnType}'`)
-
-        void compile(parseType(func.returnType), returnType, {
-          additionalProperties: false,
-          bannerComment: '',
-        }).then((result) =>
-          fs.writeFile(getAbsPath(`data/types/${returnType}.d.ts`), result),
+        imports.push(
+          `import type { ${returnType} as _${returnType} } from './${returnType}'`,
         )
+        exports.push(returnType)
+
+        void compileType(func.returnType, returnType)
       }
 
       resultObject = assocPath(
         [...moodlePackage.package, funcName],
-        `(params: ${paramsType}) => Promise<${returnType}>`,
+        `(params: ${namespaceName}.${paramsType}) => Promise<${namespaceName}.${returnType}>`,
       )(resultObject) as MoodleTypingAnnotation
     }
   }
@@ -70,9 +69,15 @@ export const moodleTypesToJson = async () => {
       getAbsPath('data/types/index.d.ts'),
       '/* eslint-disable */\n' +
         imports.join('\n') +
-        '\n\n' +
+        '\n' +
         'export type MoodleClientTypes = ' +
-        JSON.stringify(resultObject).replaceAll('"', ''),
+        JSON.stringify(resultObject).replaceAll('"', '') +
+        '\n' +
+        `export namespace MoodleClientFunctionTypes {${
+          exports.map((e) => `export type ${e} = _${e}`).join('\n') +
+          '\n' +
+          'export type AnyType = any'
+        }}`,
     )
     .then(() =>
       exec('bun run prettier -- --write index.d.ts', {
@@ -81,8 +86,14 @@ export const moodleTypesToJson = async () => {
     )
 }
 
-const camelCase = (str: string) =>
-  str.replace(/_([a-z])/g, (g) => g[1]!.toUpperCase())
+const compileType = async (typeVar: ParsedVariable, name: string) => {
+  await compile(parseType(typeVar), name, {
+    additionalProperties: false,
+    bannerComment: '',
+  }).then((result) =>
+    fs.writeFile(getAbsPath(`data/types/${name}.d.ts`), result),
+  )
+}
 
 type BaseJSONSchemaType = {
   description?: string

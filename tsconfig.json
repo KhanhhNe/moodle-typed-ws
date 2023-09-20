@@ -15,16 +15,17 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
+    "noEmit": false,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
     "noUncheckedIndexedAccess": true,
+    "rootDir": ".",
     "baseUrl": ".",
+    "outDir": "dist",
     "paths": {
       "~/*": [
         "./src/*"
@@ -34,8 +35,6 @@
   "include": [
     ".eslintrc.cjs",
     "**/*.ts",
-    "**/*.cjs",
-    "**/*.mjs"
   ],
   "exclude": [
     "node_modules"
