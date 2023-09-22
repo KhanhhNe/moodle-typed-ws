@@ -1,6 +1,6 @@
 {
   "name": "moodle-typed-ws",
-  "description": "A Moodle Web Service client library for TypeScript, fully typed.",
+  "description": "A fully typed Moodle WebService client library.",
   "author": {
     "name": "KhanhhNe",
     "url": "https://github.com/KhanhhNe"
@@ -15,10 +15,10 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf dist src/data src/moodle",
     "build": "rm -rf dist ; bun tsc -d --outdir dist",
-    "clone": "[ -d src/moodle ] || git clone https://github.com/moodle/moodle src/moodle --depth=1",
-    "parse": "bash src/parse/get-files.sh && bun src/parse/index.ts",
+    "clean": "rm -rf dist src/data",
+    "clone": "bash src/moodle-docker/copy-types.sh",
+    "parse": "bun src/parse/index.ts",
     "format": "bun eslint --fix . && prettier --write .",
     "prepare": "bun clone && bun parse && bun run build",
     "prepublishOnly": "bun run build"

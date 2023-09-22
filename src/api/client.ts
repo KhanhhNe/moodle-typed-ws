@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import type { MoodleClientTypes } from '~/data/types'
+import type { MoodleClientTypes } from '~/data/index'
 
 import has from 'ramda/src/has'
 import axios from 'axios'
