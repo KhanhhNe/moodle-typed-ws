@@ -36,4 +36,5 @@ bun.lockb
 
 # moodle source
 src/moodle
-src/data
+src/data/*
+!src/data/ws-functions.txt
