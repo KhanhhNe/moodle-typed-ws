@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; bun tsc -d --outdir dist",
+    "build": "rm -rf dist ; bun tsc -d --outDir dist",
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "parse": "bun src/parse/index.ts",

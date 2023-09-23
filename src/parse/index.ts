@@ -43,6 +43,7 @@ void (async () => {
         typeName.toLowerCase() === `${funcName.replaceAll('_', '')}wsresponse`,
     )
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, namespace, fName] = funcName.match(/^([^_]+_[^_]+)_(\S+)/) ?? []
 
     if (!paramsName || !returnName || !namespace || !fName) {
@@ -57,11 +58,10 @@ void (async () => {
 
   await fs
     .writeFile(
-      getAbsPath('data/index.d.ts'),
+      getAbsPath('data/index.ts'),
       `/* eslint-disable */
-      import type * as _WSFuncTypes from './ws-function-types.d.ts'
-
-      export type ${NAMESPACE_NAME} = _WSFuncTypes
+      import type * as ${NAMESPACE_NAME} from './ws-function-types.d.ts'
+      export type * as ${NAMESPACE_NAME} from './ws-function-types.d.ts'
 
       export type MoodleClientTypes = ${JSON.stringify(resultObject).replaceAll(
         '"',

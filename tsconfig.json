@@ -26,11 +26,6 @@
     "rootDir": ".",
     "baseUrl": ".",
     "outDir": "dist",
-    "paths": {
-      "~/*": [
-        "./src/*"
-      ]
-    }
   },
   "include": [
     ".eslintrc.cjs",
