@@ -10,14 +10,11 @@
     "url": "https://github.com/KhanhhNe/moodle-typed-ws"
   },
   "homepage": "https://github.com/KhanhhNe/moodle-typed-ws",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines.node": ">=18.0.0",
   "sideEffects": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "rm -rf dist ; bun tsup src/index.ts --dts",
     "clean": "rm -rf dist src/data",
