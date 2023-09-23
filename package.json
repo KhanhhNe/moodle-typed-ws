@@ -5,16 +5,21 @@
     "name": "KhanhhNe",
     "url": "https://github.com/KhanhhNe"
   },
-  "version": "0.1.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KhanhhNe/moodle-typed-ws"
+  },
+  "homepage": "https://github.com/KhanhhNe/moodle-typed-ws",
+  "version": "0.1.4",
   "engines.node": ">=18.0.0",
   "sideEffects": false,
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; bun tsc -d --outDir dist",
+    "build": "rm -rf dist ; bun tsup src/index.ts --dts",
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "parse": "bun src/parse/index.ts",
@@ -43,6 +48,7 @@
     "postcss": "^8.4.27",
     "prettier": "^3.0.0",
     "ramda": "^0.29.0",
+    "tsup": "^7.2.0",
     "typescript": "^5.1.6",
     "zod": "^3.22.2"
   },
