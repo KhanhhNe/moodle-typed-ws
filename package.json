@@ -19,7 +19,7 @@
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "parse": "bun src/parse/index.ts",
     "format": "bun eslint --fix . && prettier --write .",
-    "prepare": "bun clone && bun parse && bun run build",
+    "prepublish": "bun clone && bun parse && bun run build",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

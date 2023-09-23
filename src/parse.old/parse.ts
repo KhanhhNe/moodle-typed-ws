@@ -3,7 +3,7 @@ import type {
   ParseResult,
   ParsedFunctions,
   ParsedVariable,
-} from '~/utils/moodle-types'
+} from '../utils/moodle-types'
 
 import fs from 'fs'
 import path from 'path'
@@ -15,13 +15,13 @@ import {
   PrimitiveVariableType,
   RequiredType,
   VariableType,
-} from '~/utils/moodle-source-schemas'
+} from '../utils/moodle-source-schemas'
 import {
   UnknownType,
   isType,
   typeChecked,
   typeRelaxChecked,
-} from '~/utils/moodle-types'
+} from '../utils/moodle-types'
 
 // Files excluded because it is hard to parse automatically, these 'may' be parsed manually
 // reason for each file is written in the comment next to path

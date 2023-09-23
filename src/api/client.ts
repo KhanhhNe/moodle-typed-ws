@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import type { MoodleClientTypes } from '~/data/index'
+import type { MoodleClientTypes } from '../data/index'
 
 import has from 'ramda/src/has'
 import axios from 'axios'
 
-import { snakeCase } from '~/utils/string'
-import { serializeForm } from '~/utils/flatten-json'
+import { snakeCase } from '../utils/string'
+import { serializeForm } from '../utils/flatten-json'
 
 type MoodleFunction = (arg: object) => Promise<unknown>
 

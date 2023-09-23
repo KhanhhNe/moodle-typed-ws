@@ -5,9 +5,9 @@ import { exec } from 'child_process'
 import { compile } from 'json-schema-to-typescript'
 import assocPath from 'ramda/src/assocPath'
 
-import { RequiredType, VariableType } from '~/utils/moodle-source-schemas'
-import { type ParseResult, type ParsedVariable } from '~/utils/moodle-types'
-import { camelCase } from '~/utils/string'
+import { RequiredType, VariableType } from '../utils/moodle-source-schemas'
+import { type ParseResult, type ParsedVariable } from '../utils/moodle-types'
+import { camelCase } from '../utils/string'
 
 type MoodleTypingAnnotation = {
   [key: string]: string | MoodleTypingAnnotation

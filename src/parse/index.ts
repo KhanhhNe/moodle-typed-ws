@@ -4,7 +4,7 @@ import { exec } from 'child_process'
 
 import assocPath from 'ramda/src/assocPath'
 
-import { camelCase } from '~/utils/string'
+import { camelCase } from '../utils/string'
 
 const NAMESPACE_NAME = 'MoodleClientFunctionTypes'
 
