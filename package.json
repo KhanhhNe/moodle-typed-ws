@@ -7,7 +7,6 @@
   },
   "version": "0.1.0",
   "engines.node": ">=18.0.0",
-  "private": true,
   "sideEffects": false,
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -17,7 +16,7 @@
   "scripts": {
     "build": "rm -rf dist ; bun tsc -d --outdir dist",
     "clean": "rm -rf dist src/data",
-    "clone": "bash src/moodle-docker/copy-types.sh",
+    "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "parse": "bun src/parse/index.ts",
     "format": "bun eslint --fix . && prettier --write .",
     "prepare": "bun clone && bun parse && bun run build",
