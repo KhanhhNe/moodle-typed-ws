@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable ts/no-unsafe-argument */
 
 import axios from 'axios'
 import has from 'ramda/src/has'
@@ -10,7 +10,7 @@ import { snakeCase } from '../utils/string'
 type MoodleFunction = (arg: object) => Promise<unknown>
 
 function _initializeClient(baseUrl: string, token: string) {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line ts/no-empty-function
   const client = () => {}
 
   const utils = {

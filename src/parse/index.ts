@@ -40,7 +40,7 @@ void (async () => {
       typeName => typeName.toLowerCase() === `${funcName.replaceAll('_', '')}wsresponse`,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line ts/no-unused-vars
     const [_, namespace, fName] = funcName.match(/^([^_]+_[^_]+)_(\S+)/) ?? []
 
     if (!paramsName || !returnName || !namespace || !fName)
