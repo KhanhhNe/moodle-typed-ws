@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const VariableType = z.enum([
+export const VariableTypeSchema = z.enum([
   'UNKNOWN',
   'OBJECT',
   'ARRAY',
@@ -49,16 +49,16 @@ export const VariableType = z.enum([
   'PARAM_AREA',
   'PARAM_PLUGIN',
 ])
-export type VariableType = z.infer<typeof VariableType>
-export const PrimitiveVariableType = VariableType.exclude(['ARRAY', 'OBJECT'])
-export type PrimitiveVariableType = z.infer<typeof PrimitiveVariableType>
+export type VariableType = z.infer<typeof VariableTypeSchema>
+export const PrimitiveVariableTypeSchema = VariableTypeSchema.exclude(['ARRAY', 'OBJECT'])
+export type PrimitiveVariableType = z.infer<typeof PrimitiveVariableTypeSchema>
 
-export const RequiredType = z.enum([
+export const RequiredTypeSchema = z.enum([
   'VALUE_OPTIONAL',
   'VALUE_REQUIRED',
   'VALUE_DEFAULT',
 ])
-export type RequiredType = z.infer<typeof RequiredType>
+export type RequiredType = z.infer<typeof RequiredTypeSchema>
 
-export const NullAllowedType = z.enum(['NULL_NOT_ALLOWED', 'NULL_ALLOWED'])
-export type NullAllowedType = z.infer<typeof NullAllowedType>
+export const NullAllowedTypeSchema = z.enum(['NULL_NOT_ALLOWED', 'NULL_ALLOWED'])
+export type NullAllowedType = z.infer<typeof NullAllowedTypeSchema>

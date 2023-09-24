@@ -1,21 +1,20 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
 import type { Expression, Identifier, Method, New } from 'php-parser'
+import { Engine } from 'php-parser'
+
+import {
+  NullAllowedTypeSchema,
+  PrimitiveVariableTypeSchema,
+  RequiredTypeSchema,
+  VariableTypeSchema,
+} from '../utils/moodle-source-schemas'
 import type {
   ParseResult,
   ParsedFunctions,
   ParsedVariable,
 } from '../utils/moodle-types'
-
-import fs from 'fs'
-import path from 'path'
-
-import { Engine } from 'php-parser'
-
-import {
-  NullAllowedType,
-  PrimitiveVariableType,
-  RequiredType,
-  VariableType,
-} from '../utils/moodle-source-schemas'
 import {
   UnknownType,
   isType,
@@ -38,10 +37,11 @@ const ERROR_FILES = [
   'moodle/moodle-master/user/externallib.php', // Variable instead of `new` constructor
 ]
 
-const getAbsPath = (relativePath: string): string =>
-  path.join(__dirname, '..', relativePath)
+function getAbsPath(relativePath: string): string {
+  return path.join(__dirname, '..', relativePath)
+}
 
-export const parseMoodleSourceCode = () => {
+export function parseMoodleSourceCode() {
   const parser: Engine = new Engine({
     parser: {
       extractDoc: true,
@@ -73,18 +73,18 @@ export const parseMoodleSourceCode = () => {
           ...types.get(packagePath)!,
           ...functions,
         })
-      } else {
+      }
+      else {
         types.set(packagePath, functions)
       }
-    } catch (e) {
-      if (ERROR_FILES.includes(line)) {
+    }
+    catch (e) {
+      if (ERROR_FILES.includes(line))
         continue
-      }
 
       if (e instanceof Error) {
-        if (e.message.includes('No class found')) {
+        if (e.message.includes('No class found'))
           continue
-        }
       }
 
       throw e
@@ -105,11 +105,7 @@ export const parseMoodleSourceCode = () => {
   )
 }
 
-const parseContent = (
-  parser: Engine,
-  content: string,
-  filename?: string,
-): ParseResult => {
+function parseContent(parser: Engine, content: string, filename?: string): ParseResult {
   const program = parser.parseCode(content, filename ?? '')
 
   const namespaceNode = program.children.find(isType('namespace'))
@@ -117,22 +113,20 @@ const parseContent = (
   const namespaceName = namespaceNode?.name
   const packageNameInComment = program.comments
     ?.filter(isType('commentblock'))
-    ?.find((node) => node.value.includes('@package'))
+    ?.find(node => node.value.includes('@package'))
     ?.value.match(/@package\s+(.*)/)?.[1]
 
   const packageName = namespaceName ?? packageNameInComment
 
-  if (!packageName) {
+  if (!packageName)
     throw new Error(`${filename} - No package found`)
-  }
 
   const classNode = [
     ...(namespaceNode?.children ?? []),
     ...program.children,
   ].find(isType('class'))
-  if (!classNode) {
+  if (!classNode)
     throw new Error(`${filename} - No class found`)
-  }
 
   const methods = classNode.body.filter(isType('method'))
 
@@ -150,7 +144,8 @@ const parseContent = (
             params: parseParams(method),
           },
         }
-      } catch (e) {
+      }
+      catch (e) {
         // throw new Error(`${filename} - Cannot parse params`, {
         //   cause: e,
         // })
@@ -175,7 +170,8 @@ const parseContent = (
             returnType: parseReturnType(method),
           },
         }
-      } catch (e) {
+      }
+      catch (e) {
         // throw new Error(`${filename} - Cannot parse return`, {
         //   cause: e,
         // })
@@ -207,22 +203,23 @@ const parseContent = (
   }
 }
 
-const getMethodName = (method: Method): string =>
-  (method.name as Identifier).name || (method.name as string)
+function getMethodName(method: Method): string {
+  return (method.name as Identifier).name || (method.name as string)
+}
 
-const parseParams = (method: Method): ParsedVariable => {
+function parseParams(method: Method): ParsedVariable {
   return parseExternalType(
     typeChecked(method.body?.children.find(isType('return'))?.expr, 'new'),
   )
 }
 
-const parseReturnType = (method: Method): ParsedVariable => {
+function parseReturnType(method: Method): ParsedVariable {
   return parseExternalType(
     typeChecked(method.body?.children.find(isType('return'))?.expr, 'new'),
   )
 }
 
-const parseExternalType = (node: New): ParsedVariable => {
+function parseExternalType(node: New): ParsedVariable {
   const nodeName = typeChecked(node.what, 'name').name
   if (nodeName.endsWith('external_value')) {
     // Normal named value
@@ -233,18 +230,18 @@ const parseExternalType = (node: New): ParsedVariable => {
     // $default = null,
     // $allownull = NULL_ALLOWED
     return {
-      type: PrimitiveVariableType.parse(
+      type: PrimitiveVariableTypeSchema.parse(
         typeChecked(node.arguments[0], 'name').name,
       ),
       description: typeRelaxChecked(node.arguments[1], 'string')?.value,
-      required: RequiredType.parse(
-        typeRelaxChecked(node.arguments[2], 'name')?.name ??
-          RequiredType.Values.VALUE_REQUIRED,
+      required: RequiredTypeSchema.parse(
+        typeRelaxChecked(node.arguments[2], 'name')?.name
+          ?? RequiredTypeSchema.Values.VALUE_REQUIRED,
       ),
       defaultValue: node.arguments[3]?.loc?.source ?? undefined,
-      allownull: NullAllowedType.parse(
-        typeRelaxChecked(node.arguments[4], 'name')?.name ??
-          NullAllowedType.Values.NULL_ALLOWED,
+      allownull: NullAllowedTypeSchema.parse(
+        typeRelaxChecked(node.arguments[4], 'name')?.name
+          ?? NullAllowedTypeSchema.Values.NULL_ALLOWED,
       ),
     }
   }
@@ -256,39 +253,39 @@ const parseExternalType = (node: New): ParsedVariable => {
     // $itemiddesc = 'item id',
     // $warningcodedesc = 'the warning code can be used by the client app to implement specific behaviour'
     return {
-      type: VariableType.Values.ARRAY,
+      type: VariableTypeSchema.Values.ARRAY,
       description: 'list of warnings',
-      required: RequiredType.Values.VALUE_OPTIONAL,
-      allownull: NullAllowedType.Values.NULL_ALLOWED,
+      required: RequiredTypeSchema.Values.VALUE_OPTIONAL,
+      allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
       element: {
-        type: VariableType.Values.OBJECT,
+        type: VariableTypeSchema.Values.OBJECT,
         description: 'warning',
-        required: RequiredType.Values.VALUE_REQUIRED,
-        allownull: NullAllowedType.Values.NULL_NOT_ALLOWED,
+        required: RequiredTypeSchema.Values.VALUE_REQUIRED,
+        allownull: NullAllowedTypeSchema.Values.NULL_NOT_ALLOWED,
         attributes: {
           item: {
-            type: VariableType.Values.PARAM_TEXT,
+            type: VariableTypeSchema.Values.PARAM_TEXT,
             description: typeRelaxChecked(node.arguments[0], 'string')?.value,
-            required: RequiredType.Values.VALUE_OPTIONAL,
-            allownull: NullAllowedType.Values.NULL_ALLOWED,
+            required: RequiredTypeSchema.Values.VALUE_OPTIONAL,
+            allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
           },
           itemid: {
-            type: VariableType.Values.PARAM_INT,
+            type: VariableTypeSchema.Values.PARAM_INT,
             description: typeRelaxChecked(node.arguments[1], 'string')?.value,
-            required: RequiredType.Values.VALUE_OPTIONAL,
-            allownull: NullAllowedType.Values.NULL_ALLOWED,
+            required: RequiredTypeSchema.Values.VALUE_OPTIONAL,
+            allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
           },
           warningcode: {
-            type: VariableType.Values.PARAM_ALPHANUM,
+            type: VariableTypeSchema.Values.PARAM_ALPHANUM,
             description: typeRelaxChecked(node.arguments[2], 'string')?.value,
-            required: RequiredType.Values.VALUE_REQUIRED,
-            allownull: NullAllowedType.Values.NULL_ALLOWED,
+            required: RequiredTypeSchema.Values.VALUE_REQUIRED,
+            allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
           },
           message: {
-            type: VariableType.Values.PARAM_RAW,
+            type: VariableTypeSchema.Values.PARAM_RAW,
             description: 'untranslated english message to explain the warning',
-            required: RequiredType.Values.VALUE_REQUIRED,
-            allownull: NullAllowedType.Values.NULL_ALLOWED,
+            required: RequiredTypeSchema.Values.VALUE_REQUIRED,
+            allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
           },
         },
       },
@@ -303,14 +300,14 @@ const parseExternalType = (node: New): ParsedVariable => {
     // $required = VALUE_REQUIRED,
     // $default = null
     return {
-      type: VariableType.Values.OBJECT,
+      type: VariableTypeSchema.Values.OBJECT,
       description: typeRelaxChecked(node.arguments[1], 'string')?.value,
-      required: RequiredType.parse(
-        typeRelaxChecked(node.arguments[2], 'name')?.name ??
-          RequiredType.Values.VALUE_REQUIRED,
+      required: RequiredTypeSchema.parse(
+        typeRelaxChecked(node.arguments[2], 'name')?.name
+          ?? RequiredTypeSchema.Values.VALUE_REQUIRED,
       ),
       defaultValue: node.arguments[3]?.loc?.source ?? undefined,
-      allownull: NullAllowedType.Values.NULL_NOT_ALLOWED,
+      allownull: NullAllowedTypeSchema.Values.NULL_NOT_ALLOWED,
       attributes: parseExternalTypeAttributes(
         typeChecked(node.arguments[0], 'array').items,
       ),
@@ -326,16 +323,16 @@ const parseExternalType = (node: New): ParsedVariable => {
     // $default = null,
     // $allownull = NULL_NOT_ALLOWED
     return {
-      type: VariableType.Values.OBJECT,
+      type: VariableTypeSchema.Values.OBJECT,
       description: typeRelaxChecked(node.arguments[1], 'string')?.value,
-      required: RequiredType.parse(
-        typeRelaxChecked(node.arguments[2], 'name')?.name ??
-          RequiredType.Values.VALUE_REQUIRED,
+      required: RequiredTypeSchema.parse(
+        typeRelaxChecked(node.arguments[2], 'name')?.name
+          ?? RequiredTypeSchema.Values.VALUE_REQUIRED,
       ),
       defaultValue: node.arguments[3]?.loc?.source ?? undefined,
-      allownull: NullAllowedType.parse(
-        typeRelaxChecked(node.arguments[4], 'name')?.name ??
-          NullAllowedType.Values.NULL_NOT_ALLOWED,
+      allownull: NullAllowedTypeSchema.parse(
+        typeRelaxChecked(node.arguments[4], 'name')?.name
+          ?? NullAllowedTypeSchema.Values.NULL_NOT_ALLOWED,
       ),
       attributes: parseExternalTypeAttributes(
         typeChecked(node.arguments[0], 'array').items,
@@ -346,16 +343,16 @@ const parseExternalType = (node: New): ParsedVariable => {
   if (nodeName.endsWith('external_multiple_structure')) {
     // Array
     return {
-      type: VariableType.Values.ARRAY,
+      type: VariableTypeSchema.Values.ARRAY,
       description: typeRelaxChecked(node.arguments[1], 'string')?.value,
-      required: RequiredType.parse(
-        typeRelaxChecked(node.arguments[2], 'name')?.name ??
-          RequiredType.Values.VALUE_REQUIRED,
+      required: RequiredTypeSchema.parse(
+        typeRelaxChecked(node.arguments[2], 'name')?.name
+          ?? RequiredTypeSchema.Values.VALUE_REQUIRED,
       ),
       defaultValue: node.arguments[3]?.loc?.source ?? undefined,
-      allownull: NullAllowedType.parse(
-        typeRelaxChecked(node.arguments[4], 'name')?.name ??
-          NullAllowedType.Values.NULL_NOT_ALLOWED,
+      allownull: NullAllowedTypeSchema.parse(
+        typeRelaxChecked(node.arguments[4], 'name')?.name
+          ?? NullAllowedTypeSchema.Values.NULL_NOT_ALLOWED,
       ),
       element: parseExternalType(typeChecked(node.arguments[0], 'new')),
     }
@@ -364,18 +361,15 @@ const parseExternalType = (node: New): ParsedVariable => {
   throw new Error(`Cannot parse external type - ${nodeName} not supported`)
 }
 
-const parseExternalTypeAttributes = (
-  attributes: Expression[],
-): Record<string, ParsedVariable> =>
-  attributes.reduce((acc, argument) => {
-    if (!isType('entry')(argument)) {
+function parseExternalTypeAttributes(attributes: Expression[]): Record<string, ParsedVariable> {
+  return attributes.reduce((acc, argument) => {
+    if (!isType('entry')(argument))
       return acc
-    }
 
     const { key } = argument
-    if (!key) {
-      throw new Error(`Cannot parse entry - key or value missing`)
-    }
+    if (!key)
+      throw new Error('Cannot parse entry - key or value missing')
+
     const value = typeChecked(argument.value, 'new')
 
     if (typeChecked(value.what, 'name').name === 'external_format_value') {
@@ -401,12 +395,12 @@ const parseExternalTypeAttributes = (
           //     FORMAT_MARKDOWN = 4,
           // );
           description: `${referencedAttribute} format (1 = HTML, 0 = MOODLE, 2 = PLAIN, or 4 = MARKDOWN)`,
-          required: RequiredType.parse(
-            typeRelaxChecked(value.arguments[1], 'name')?.name ??
-              RequiredType.Values.VALUE_REQUIRED,
+          required: RequiredTypeSchema.parse(
+            typeRelaxChecked(value.arguments[1], 'name')?.name
+              ?? RequiredTypeSchema.Values.VALUE_REQUIRED,
           ),
           defaultValue: value.arguments[2]?.loc?.source ?? undefined,
-          allownull: NullAllowedType.Values.NULL_ALLOWED,
+          allownull: NullAllowedTypeSchema.Values.NULL_ALLOWED,
         },
       }
     }
@@ -416,8 +410,9 @@ const parseExternalTypeAttributes = (
       [getStringNodeValue(key)!]: parseExternalType(value),
     }
   }, {})
+}
 
-const getStringNodeValue = (node?: Expression): string | undefined => {
+function getStringNodeValue(node?: Expression): string | undefined {
   return typeRelaxChecked(node, 'string')?.value
 }
 

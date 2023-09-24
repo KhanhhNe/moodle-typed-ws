@@ -1,22 +1,24 @@
-import fs from 'fs/promises'
-import path from 'path'
-import { exec } from 'child_process'
+import { exec } from 'node:child_process'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 import { compile } from 'json-schema-to-typescript'
 import assocPath from 'ramda/src/assocPath'
 
-import { RequiredType, VariableType } from '../utils/moodle-source-schemas'
-import { type ParseResult, type ParsedVariable } from '../utils/moodle-types'
+import type { VariableType } from '../utils/moodle-source-schemas'
+import { RequiredTypeSchema, VariableTypeSchema } from '../utils/moodle-source-schemas'
+import type { ParseResult, ParsedVariable } from '../utils/moodle-types'
 import { camelCase } from '../utils/string'
 
-type MoodleTypingAnnotation = {
+interface MoodleTypingAnnotation {
   [key: string]: string | MoodleTypingAnnotation
 }
 
-const getAbsPath = (relativePath: string): string =>
-  path.join(__dirname, '..', relativePath)
+function getAbsPath(relativePath: string): string {
+  return path.join(__dirname, '..', relativePath)
+}
 
-export const moodleTypesToJson = async () => {
+export async function moodleTypesToJson() {
   await fs.mkdir(getAbsPath('data/types'), { recursive: true })
   const moodleTypes = JSON.parse(
     (await fs.readFile(getAbsPath('data/types.json'))).toString(),
@@ -25,7 +27,7 @@ export const moodleTypesToJson = async () => {
   const moodlePackages = moodleTypes
   let resultObject: MoodleTypingAnnotation = {}
   const imports: string[] = []
-  const exports: string[] = []
+  const exportStatements: string[] = []
   const namespaceName = 'MoodleClientFunctionTypes'
 
   for (const moodlePackage of moodlePackages) {
@@ -42,9 +44,9 @@ export const moodleTypesToJson = async () => {
         imports.push(
           `import type { ${paramsType} as _${paramsType} } from './${paramsType}'`,
         )
-        exports.push(paramsType)
+        exportStatements.push(paramsType)
 
-        void compileType(func.params, paramsType)
+        compileType(func.params, paramsType)
       }
 
       if (func.returnType) {
@@ -52,9 +54,9 @@ export const moodleTypesToJson = async () => {
         imports.push(
           `import type { ${returnType} as _${returnType} } from './${returnType}'`,
         )
-        exports.push(returnType)
+        exportStatements.push(returnType)
 
-        void compileType(func.returnType, returnType)
+        compileType(func.returnType, returnType)
       }
 
       resultObject = assocPath(
@@ -67,35 +69,32 @@ export const moodleTypesToJson = async () => {
   await fs
     .writeFile(
       getAbsPath('data/types/index.d.ts'),
-      '/* eslint-disable */\n' +
-        imports.join('\n') +
-        '\n' +
-        'export type MoodleClientTypes = ' +
-        JSON.stringify(resultObject).replaceAll('"', '') +
-        '\n' +
-        `export namespace MoodleClientFunctionTypes {${
-          exports.map((e) => `export type ${e} = _${e}`).join('\n') +
-          '\n' +
-          'export type AnyType = any'
+      `/* eslint-disable */\n${
+        imports.join('\n')
+        }\n`
+        + `export type MoodleClientTypes = ${
+        JSON.stringify(resultObject).replaceAll('"', '')
+        }\n`
+        + `export namespace MoodleClientFunctionTypes {${
+          `${exportStatements.map(e => `export type ${e} = _${e}`).join('\n')
+          }\n`
+          + 'export type AnyType = any'
         }}`,
     )
     .then(() =>
       exec('bun run prettier -- --write index.d.ts', {
         cwd: getAbsPath('data/types'),
-      }),
-    )
+      }))
 }
 
-const compileType = async (typeVar: ParsedVariable, name: string) => {
+async function compileType(typeVar: ParsedVariable, name: string) {
   await compile(parseType(typeVar), name, {
     additionalProperties: false,
     bannerComment: '',
-  }).then((result) =>
-    fs.writeFile(getAbsPath(`data/types/${name}.d.ts`), result),
-  )
+  }).then(result => fs.writeFile(getAbsPath(`data/types/${name}.d.ts`), result))
 }
 
-type BaseJSONSchemaType = {
+interface BaseJSONSchemaType {
   description?: string
   required?: string[]
   tsType?: string
@@ -109,19 +108,19 @@ type SimplePrimitiveJSONSchemaType = BaseJSONSchemaType & {
 type JSONSchemaType =
   | SimplePrimitiveJSONSchemaType
   | (BaseJSONSchemaType & {
-      type: ['string', 'null'] | ['number', 'null'] | ['boolean', 'null']
-    })
+    type: ['string', 'null'] | ['number', 'null'] | ['boolean', 'null']
+  })
   | (BaseJSONSchemaType & {
-      type: 'array'
-      items: JSONSchemaType
-    })
+    type: 'array'
+    items: JSONSchemaType
+  })
   | (BaseJSONSchemaType & {
-      type: 'object'
-      properties: Record<string, JSONSchemaType>
-    })
+    type: 'object'
+    properties: Record<string, JSONSchemaType>
+  })
 
-const parseType = (variable: ParsedVariable): JSONSchemaType => {
-  if (variable.type === VariableType.Values.OBJECT) {
+function parseType(variable: ParsedVariable): JSONSchemaType {
+  if (variable.type === VariableTypeSchema.Values.OBJECT) {
     return {
       type: 'object',
       properties: Object.fromEntries(
@@ -132,25 +131,27 @@ const parseType = (variable: ParsedVariable): JSONSchemaType => {
       ),
       required: Object.entries(variable.attributes)
         .filter(
-          ([, attribute]) =>
-            attribute.required === RequiredType.Values.VALUE_REQUIRED,
+          ([, attribute]) => attribute.required === RequiredTypeSchema.Values.VALUE_REQUIRED,
         )
         .map(([name]) => name),
     }
-  } else if (variable.type === VariableType.Values.ARRAY) {
+  }
+  else if (variable.type === VariableTypeSchema.Values.ARRAY) {
     return { type: 'array', items: parseType(variable.element) }
-  } else {
+  }
+  else {
     const result = parsePrimitiveType(variable)
     if (
-      result.type !== 'array' &&
-      result.type !== 'null' &&
-      variable.allownull === 'NULL_ALLOWED'
+      result.type !== 'array'
+      && result.type !== 'null'
+      && variable.allownull === 'NULL_ALLOWED'
     ) {
       return {
         type: [result.type, 'null'],
         description: variable.description,
       }
-    } else {
+    }
+    else {
       return {
         type: result.type,
         items: result.items,
@@ -160,9 +161,7 @@ const parseType = (variable: ParsedVariable): JSONSchemaType => {
   }
 }
 
-const parsePrimitiveType = (
-  variable: ParsedVariable,
-): SimplePrimitiveJSONSchemaType => {
+function parsePrimitiveType(variable: ParsedVariable): SimplePrimitiveJSONSchemaType {
   if (
     (
       [
@@ -206,13 +205,11 @@ const parsePrimitiveType = (
         'PARAM_PLUGIN',
       ] as VariableType[]
     ).includes(variable.type)
-  ) {
+  )
     return { type: 'string' }
-  }
 
-  if ((['PARAM_BOOL'] as VariableType[]).includes(variable.type)) {
+  if ((['PARAM_BOOL'] as VariableType[]).includes(variable.type))
     return { type: 'boolean' }
-  }
 
   if (
     (
@@ -224,13 +221,11 @@ const parsePrimitiveType = (
         'PARAM_NUMBER',
       ] as VariableType[]
     ).includes(variable.type)
-  ) {
+  )
     return { type: 'number' }
-  }
 
-  if ((['PARAM_SEQUENCE'] as VariableType[]).includes(variable.type)) {
+  if ((['PARAM_SEQUENCE'] as VariableType[]).includes(variable.type))
     return { type: 'array', items: { type: 'number' } }
-  }
 
   if (variable.type === 'UNKNOWN') {
     return {

@@ -6,31 +6,31 @@
       "dom.iterable",
       "esnext"
     ],
+    "jsx": "preserve",
+    "module": "esnext",
+    "rootDir": ".",
+    "moduleResolution": "node",
+    "baseUrl": ".",
     "types": [
       "node",
       "bun-types"
     ],
+    "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "noUncheckedIndexedAccess": true,
-    "rootDir": ".",
-    "baseUrl": ".",
     "outDir": "dist",
+    "noEmit": false,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
   },
   "include": [
-    ".eslintrc.cjs",
+    "eslint.config.js",
     "**/*.ts",
-    "**/*.d.ts",
+    "**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

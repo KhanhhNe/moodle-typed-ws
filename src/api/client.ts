@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import type { MoodleClientTypes } from '../data'
 
-import has from 'ramda/src/has'
 import axios from 'axios'
+import has from 'ramda/src/has'
 
-import { snakeCase } from '../utils/string'
+import type { MoodleClientTypes } from '../data'
 import { serializeForm } from '../utils/flatten-json'
+import { snakeCase } from '../utils/string'
 
 type MoodleFunction = (arg: object) => Promise<unknown>
 
-const _initializeClient = (baseUrl: string, token: string) => {
+function _initializeClient(baseUrl: string, token: string) {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const client = () => {}
 
@@ -33,7 +33,7 @@ const _initializeClient = (baseUrl: string, token: string) => {
             },
           },
         )
-        .then((res) => res.data as unknown) as ReturnType<F>,
+        .then(res => res.data as unknown) as ReturnType<F>,
   }
 
   client.utils = utils
@@ -44,25 +44,19 @@ const _initializeClient = (baseUrl: string, token: string) => {
 
 type MoodleClient = ReturnType<typeof _initializeClient>
 
-const callMoodleApi = <F extends MoodleFunction>(
-  client: MoodleClient,
-  funcPath: string[],
-  params: object,
-) => {
+function callMoodleApi<F extends MoodleFunction>(client: MoodleClient, funcPath: string[], params: object) {
   const path = snakeCase(funcPath.join('_'))
   return client.utils.request<F>(path, params)
 }
 
-const createClientProxy = <T extends MoodleClient>(
-  client: T,
-  path: string[] = [],
-): T => {
+function createClientProxy<T extends MoodleClient>(client: T, path: string[] = []): T {
   return new Proxy(client, {
     get(target, prop) {
       if (has(prop, client)) {
         // Return object property if it exists
         return client[prop as keyof T]
-      } else {
+      }
+      else {
         // Otherwise, return a proxy for the next level.
         // The object will still be empty, but since we apply deep typing
         // to the object, the proxy will be able to return the correct type.
@@ -79,11 +73,11 @@ const createClientProxy = <T extends MoodleClient>(
   })
 }
 
-export type MoodleClientOptions = {
+export interface MoodleClientOptions {
   baseUrl: string
   token: string
 }
 
-export const initializeClient = ({ baseUrl, token }: MoodleClientOptions) => {
+export function initializeClient({ baseUrl, token }: MoodleClientOptions) {
   return createClientProxy(_initializeClient(baseUrl, token))
 }

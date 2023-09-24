@@ -1,7 +1,7 @@
 /**
  * Structure of warnings returned by WS.
  */
-export type CoreWSExternalWarning = {
+export interface CoreWSExternalWarning {
   /**
    * Item.
    */
@@ -26,7 +26,7 @@ export type CoreWSExternalWarning = {
 /**
  * Structure of files returned by WS.
  */
-export type CoreWSExternalFile = {
+export interface CoreWSExternalFile {
   /**
    * Downloadable file url.
    */
