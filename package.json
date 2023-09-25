@@ -1,7 +1,7 @@
 {
   "name": "moodle-typed-ws",
   "type": "module",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A fully typed Moodle WebService client library.",
   "author": {
     "name": "KhanhhNe",
