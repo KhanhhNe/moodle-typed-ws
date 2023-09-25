@@ -1,7 +1,7 @@
 {
   "name": "moodle-typed-ws",
   "type": "module",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A fully typed Moodle WebService client library.",
   "author": {
     "name": "KhanhhNe",
@@ -21,8 +21,8 @@
     "typescript"
   ],
   "sideEffects": false,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "types": "dist/index.d.cts",
   "scripts": {
     "build": "rm -rf dist ; bun tsup src/index.ts --dts",
     "clean": "rm -rf dist src/data",
