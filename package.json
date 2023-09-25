@@ -1,7 +1,7 @@
 {
   "name": "moodle-typed-ws",
   "type": "module",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A fully typed Moodle WebService client library.",
   "author": {
     "name": "KhanhhNe",
@@ -21,10 +21,15 @@
     "typescript"
   ],
   "sideEffects": false,
-  "main": "dist/index.cjs",
-  "types": "dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "rm -rf dist ; bun tsup src/index.ts --dts",
+    "build": "rm -rf dist ; bun tsup src/index.ts --dts --format cjs,esm",
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "parse": "bun src/parse/index.ts",
