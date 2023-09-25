@@ -1,6 +1,11 @@
 import antfu from '@antfu/eslint-config'
 
-export default antfu({}, {
+export default antfu({
+  ignores: [
+    'src/data/*',
+    '*.md',
+  ],
+}, {
   rules: {
     'ts/consistent-type-imports': ['error', {
       prefer: 'type-imports',

@@ -10,7 +10,7 @@
   "homepage": "https://github.com/KhanhhNe/moodle-typed-ws",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KhanhhNe/moodle-typed-ws"
+    "url": "git+https://github.com/KhanhhNe/moodle-typed-ws.git"
   },
   "engines.node": ">=18.0.0",
   "keywords": [

@@ -16,7 +16,7 @@ interface MoodleTypingAnnotation {
   [key: string]: string | MoodleTypingAnnotation
 }
 
-void (async () => {
+(async () => {
   const functions = (await fs.readFile(getAbsPath('data/ws-functions.txt')))
     .toString()
     .split('\n')
@@ -65,7 +65,7 @@ void (async () => {
       )}`,
     )
     .then(() =>
-      exec('bun run prettier -- --write index.d.ts', {
+      exec('bun prettier -- --write index.d.ts', {
         cwd: getAbsPath('data'),
       }))
 })()

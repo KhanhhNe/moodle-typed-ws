@@ -1,7 +1,7 @@
 import { moodleTypesToJson } from './moodle-types-to-json'
 import { parseMoodleSourceCode } from './parse'
 
-void (async () => {
+(async () => {
   parseMoodleSourceCode()
   await moodleTypesToJson()
 })()
