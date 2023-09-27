@@ -5,17 +5,41 @@ ws_functions_file="../data/ws-function-types.ts"
 ws_functions_list="../data/ws-functions.txt"
 mkdir -p ../data
 
-docker-compose down
+docker-compose down -v
 [ -f "$ws_functions_file" ] && rm $ws_functions_file
 
 docker-compose up -d
 
-# Get the ID of the container running your service
+# Get the ID of the container running the service
 container_id=$(docker-compose ps -q moodle)
-echo "Copying files from container..."
+
+# Wait until moodle logs contains "Starting Apache"
+max_retries=180
+echo "Waiting for Moodle to be up..."
+
+while true; do
+  if docker logs "$container_id" 2>&1 | grep -q "Starting Apache"; then
+    echo "Moodle is up"
+    break
+  fi
+
+  sleep 1
+  max_retries=$((max_retries - 1))
+
+  # Notify every 10 tries
+  if [ $((max_retries % 10)) -eq 0 ]; then
+    echo "Retries left: $max_retries"
+  fi
+
+  if [ $max_retries -eq 0 ]; then
+    echo "Moodle is not up"
+    exit 1
+  fi
+done
 
 # Copy Typescript files from the container to the CWD
-max_retries=10
+echo "Copying files from container..."
+max_retries=60
 get_funcs=false
 
 while true; do
@@ -34,6 +58,11 @@ while true; do
 
   sleep 1
   max_retries=$((max_retries - 1))
+
+  # Notify every 10 tries
+  if [ $((max_retries % 10)) -eq 0 ]; then
+    echo "Retries left: $max_retries"
+  fi
 
   if [ $max_retries -eq 0 ]; then
     echo "Failed to copy files."
@@ -56,3 +85,5 @@ tsc $ws_functions_file -d --emitDeclarationOnly
 # Get functions
 echo "Getting functions..."
 cat $ws_functions_file | grep -Eo "Params of ([a-z0-9]+_?)+" | awk '{print $3}' | sort -u >$ws_functions_list
+
+echo "Done"
