@@ -24,6 +24,6 @@ jobs:
         run: bun install
 
       - name: Build and Publish
-        run: bun prepublish && npm publish --dry-run
+        run: bun prepublish && npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
