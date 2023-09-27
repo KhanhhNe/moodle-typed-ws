@@ -33,8 +33,7 @@
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
     "format": "bun eslint --fix .",
-    "prepublish": "bun clone && bun run build",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun clone && bun run build"
   },
   "dependencies": {
     "axios": "^1.5.0",
