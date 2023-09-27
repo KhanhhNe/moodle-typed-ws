@@ -3,7 +3,7 @@
 import axios from 'axios'
 import has from 'ramda/src/has'
 
-import type { MoodleClientTypes } from '../data'
+import type { MoodleClientTypes } from '../data/ws-function-types'
 import { serializeForm } from '../utils/flatten-json'
 import { snakeCase } from '../utils/string'
 
@@ -81,3 +81,9 @@ export interface MoodleClientOptions {
 export function initializeClient({ baseUrl, token }: MoodleClientOptions) {
   return createClientProxy(_initializeClient(baseUrl, token))
 }
+
+initializeClient({
+  baseUrl: 'https://e-learning.hcmut.edu.vn',
+  token: '40c6575ef2b9c7dd2c7243766cf0cf48',
+// eslint-disable-next-line no-console
+}).block.recentlyaccesseditems.getRecentItems({}).then(console.log)
