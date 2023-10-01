@@ -34,7 +34,7 @@
     "build": "rm -rf dist ; bun tsup src/index.ts --dts --format cjs,esm",
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
-    "format": "bun eslint --fix .",
+    "format": "biome lint . --apply-unsafe && biome format . --write",
     "prepublishOnly": "bun clone && bun run build"
   },
   "dependencies": {
@@ -42,11 +42,10 @@
     "object-to-formdata": "^4.5.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^1.0.0-beta.6",
+    "@biomejs/biome": "^1.2.2",
     "@types/node": "^18.16.0",
     "@types/ramda": "^0.29.4",
     "bun-types": "^1.0.2",
-    "eslint": "^8.47.0",
     "json-schema-to-typescript": "^13.1.1",
     "php-parser": "^3.1.5",
     "prettier": "^3.0.0",

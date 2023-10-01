@@ -1,6 +1,5 @@
 import type {
-  String as ASTString,
-  Array,
+  Array as ASTArray,
   Class,
   CommentBlock,
   Entry,
@@ -10,10 +9,10 @@ import type {
   Namespace,
   New,
   Return,
+  String as ASTString,
   Variable,
 } from 'php-parser'
 import path from 'ramda/src/path'
-
 import {
   type NullAllowedType,
   NullAllowedTypeSchema,
@@ -81,7 +80,7 @@ const TypeMapObject = {
   return: undefined as Return | undefined,
   variable: undefined as Variable | undefined,
   commentblock: undefined as CommentBlock | undefined,
-  array: undefined as Array | undefined,
+  array: undefined as ASTArray | undefined,
   name: undefined as Name | undefined,
 }
 type RemoveValueUndefined<T> = {
@@ -89,21 +88,25 @@ type RemoveValueUndefined<T> = {
 }
 type TypeMap = RemoveValueUndefined<typeof TypeMapObject>
 
-export function typeRelaxChecked<T extends keyof TypeMap>(node: any, type: T): TypeMap[T] | undefined {
-  if (path(['kind'], node) === type)
-    return node as unknown as TypeMap[T]
+export const typeRelaxChecked = <T extends keyof TypeMap>(
+  node: unknown,
+  type: T,
+): TypeMap[T] | undefined => {
+  if (path(['kind'], node) === type) return node as unknown as TypeMap[T]
 
   return undefined
 }
-export function typeChecked<T extends keyof TypeMap>(node: any, type: T): TypeMap[T] {
-  if (typeRelaxChecked(node, type))
-    return node as unknown as TypeMap[T]
+export const typeChecked = <T extends keyof TypeMap>(
+  node: unknown,
+  type: T,
+): TypeMap[T] => {
+  if (typeRelaxChecked(node, type)) return node as unknown as TypeMap[T]
 
   throw new Error(
     `Type check failed - ${type} expected but ${path(['kind'], node)} found`,
   )
 }
-export function isType<T extends keyof TypeMap>(type: T) {
-  return (node: any): node is TypeMap[T] =>
+export const isType =
+  <T extends keyof TypeMap>(type: T) =>
+  (node: unknown): node is TypeMap[T] =>
     path(['kind'], node) === type
-}

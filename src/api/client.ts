@@ -1,8 +1,6 @@
 /* eslint-disable ts/no-unsafe-argument */
-
 import axios from 'axios'
 import has from 'ramda/src/has'
-
 import type { MoodleClientTypes } from '../data/ws-function-types'
 import { serializeForm } from '../utils/flatten-json'
 import { snakeCase } from '../utils/string'
@@ -33,7 +31,7 @@ function _initializeClient(baseUrl: string, token: string) {
             },
           },
         )
-        .then(res => res.data as unknown) as ReturnType<F>,
+        .then((res) => res.data as unknown) as ReturnType<F>,
   }
 
   client.utils = utils
@@ -44,19 +42,25 @@ function _initializeClient(baseUrl: string, token: string) {
 
 type MoodleClient = ReturnType<typeof _initializeClient>
 
-function callMoodleApi<F extends MoodleFunction>(client: MoodleClient, funcPath: string[], params: object) {
+function callMoodleApi<F extends MoodleFunction>(
+  client: MoodleClient,
+  funcPath: string[],
+  params: object,
+) {
   const path = snakeCase(funcPath.join('_'))
   return client.utils.request<F>(path, params)
 }
 
-function createClientProxy<T extends MoodleClient>(client: T, path: string[] = []): T {
+function createClientProxy<T extends MoodleClient>(
+  client: T,
+  path: string[] = [],
+): T {
   return new Proxy(client, {
     get(target, prop) {
       if (has(prop, client)) {
         // Return object property if it exists
         return client[prop as keyof T]
-      }
-      else {
+      } else {
         // Otherwise, return a proxy for the next level.
         // The object will still be empty, but since we apply deep typing
         // to the object, the proxy will be able to return the correct type.
@@ -78,12 +82,5 @@ export interface MoodleClientOptions {
   token: string
 }
 
-export function initializeClient({ baseUrl, token }: MoodleClientOptions) {
-  return createClientProxy(_initializeClient(baseUrl, token))
-}
-
-initializeClient({
-  baseUrl: 'https://e-learning.hcmut.edu.vn',
-  token: '40c6575ef2b9c7dd2c7243766cf0cf48',
-// eslint-disable-next-line no-console
-}).block.recentlyaccesseditems.getRecentItems({}).then(console.log)
+export const initializeClient = ({ baseUrl, token }: MoodleClientOptions) =>
+  createClientProxy(_initializeClient(baseUrl, token))

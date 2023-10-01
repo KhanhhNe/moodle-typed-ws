@@ -50,7 +50,10 @@ export const VariableTypeSchema = z.enum([
   'PARAM_PLUGIN',
 ])
 export type VariableType = z.infer<typeof VariableTypeSchema>
-export const PrimitiveVariableTypeSchema = VariableTypeSchema.exclude(['ARRAY', 'OBJECT'])
+export const PrimitiveVariableTypeSchema = VariableTypeSchema.exclude([
+  'ARRAY',
+  'OBJECT',
+])
 export type PrimitiveVariableType = z.infer<typeof PrimitiveVariableTypeSchema>
 
 export const RequiredTypeSchema = z.enum([
@@ -60,5 +63,8 @@ export const RequiredTypeSchema = z.enum([
 ])
 export type RequiredType = z.infer<typeof RequiredTypeSchema>
 
-export const NullAllowedTypeSchema = z.enum(['NULL_NOT_ALLOWED', 'NULL_ALLOWED'])
+export const NullAllowedTypeSchema = z.enum([
+  'NULL_NOT_ALLOWED',
+  'NULL_ALLOWED',
+])
 export type NullAllowedType = z.infer<typeof NullAllowedTypeSchema>
