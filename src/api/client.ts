@@ -1,5 +1,4 @@
 /* eslint-disable ts/no-unsafe-argument */
-import axios from 'axios'
 import has from 'ramda/src/has'
 import type { MoodleClientTypes } from '../data/ws-function-types'
 import { serializeForm } from '../utils/flatten-json'
@@ -16,22 +15,20 @@ function _initializeClient(baseUrl: string, token: string) {
       functionName: string,
       params: Parameters<F>[0],
     ): ReturnType<F> =>
-      axios
-        .post(
-          `${baseUrl}/webservice/rest/server.php`,
-          {
-            wstoken: token,
-            wsfunction: functionName,
-            moodlewsrestformat: 'json',
-            ...serializeForm(params),
-          },
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        )
-        .then((res) => res.data as unknown) as ReturnType<F>,
+      fetch(`${baseUrl}/webservice/rest/server.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          wstoken: token,
+          wsfunction: functionName,
+          moodlewsrestformat: 'json',
+          ...serializeForm(params),
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) => res as unknown) as ReturnType<F>,
   }
 
   client.utils = utils

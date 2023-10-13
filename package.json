@@ -34,11 +34,11 @@
     "build": "rm -rf dist ; bun tsup src/index.ts --dts --format cjs,esm",
     "clean": "rm -rf dist src/data",
     "clone": "(cd src/moodle-docker && bash copy-types.sh)",
-    "format": "biome lint . --apply-unsafe && biome format . --write",
+    "format": "biome lint . --apply-unsafe ; biome format . --write ; true",
+    "postinstall": "bun format",
     "prepublishOnly": "bun clone && bun run build"
   },
   "dependencies": {
-    "axios": "^1.5.0",
     "object-to-formdata": "^4.5.1"
   },
   "devDependencies": {
