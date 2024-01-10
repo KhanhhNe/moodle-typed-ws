@@ -1,4 +1,4 @@
-name: Publish on Release
+name: Publish to npm
 
 on:
   push:
