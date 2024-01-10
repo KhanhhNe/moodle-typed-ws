@@ -7,8 +7,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  check-new-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      changed: ${{ steps.check.outputs.changed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -17,40 +20,34 @@ jobs:
         id: check
         uses: EndBug/version-check@v2
 
-      - name: Log when changed
-        if: steps.check.outputs.changed == 'true'
-        run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+  publish:
+    needs: check-new-version
+    if: needs.check-new-version.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - uses: oven-sh/setup-bun@v1
-        if: steps.check.outputs.changed == 'true'
         with:
           bun-version: latest
 
-      - uses: KengoTODA/actions-setup-docker-compose@v1
-        if: steps.check.outputs.changed == 'true'
-        with:
-          version: "2.14.2" # the full version of `docker-compose` command
-
       - name: Install dependencies
-        if: steps.check.outputs.changed == 'true'
         run: bun install
 
       - uses: actions/setup-node@v3
-        if: steps.check.outputs.changed == 'true'
         with:
           node-version: "18"
           registry-url: "https://registry.npmjs.org"
 
       - name: Publish
-        if: steps.check.outputs.changed == 'true'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: Publish github release
-        if: steps.check.outputs.changed == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.check.outputs.version }}
+          tag_name: ${{ needs.check-new-version.outputs.version }}
           draft: false
           prerelease: false

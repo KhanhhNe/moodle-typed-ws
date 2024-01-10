@@ -1,7 +1,7 @@
 {
   "name": "moodle-typed-ws",
   "type": "module",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "description": "A fully typed Moodle WebService client library.",
   "author": {
     "name": "KhanhhNe",
@@ -33,7 +33,7 @@
   "scripts": {
     "build": "rm -rf dist ; bun tsup src/index.ts --dts --format cjs,esm",
     "clean": "rm -rf dist src/data",
-    "clone": "(cd src/moodle-docker && bash copy-types.sh)",
+    "clone": "(cd src/moodle-scripts && python3 parse-types.py)",
     "format": "biome lint . --apply-unsafe ; biome format . --write ; true",
     "postinstall": "bun format",
     "prepublishOnly": "bun clone && bun run build"
