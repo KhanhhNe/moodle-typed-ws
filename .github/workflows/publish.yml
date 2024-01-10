@@ -1,9 +1,9 @@
 name: Publish on Release
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -13,23 +13,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Check if version has been updated
+        id: check
+        uses: EndBug/version-check@v2
+
+      - name: Log when changed
+        if: steps.check.outputs.changed == 'true'
+        run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+
       - uses: oven-sh/setup-bun@v1
+        if: steps.check.outputs.changed == 'true'
         with:
           bun-version: latest
 
       - uses: KengoTODA/actions-setup-docker-compose@v1
+        if: steps.check.outputs.changed == 'true'
         with:
-          version: '2.14.2' # the full version of `docker-compose` command
+          version: "2.14.2" # the full version of `docker-compose` command
 
       - name: Install dependencies
+        if: steps.check.outputs.changed == 'true'
         run: bun install
 
       - uses: actions/setup-node@v3
+        if: steps.check.outputs.changed == 'true'
         with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Publish
+        if: steps.check.outputs.changed == 'true'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
