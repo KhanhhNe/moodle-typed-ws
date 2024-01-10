@@ -45,6 +45,7 @@ get_funcs=false
 while true; do
   if ! $get_funcs; then
     docker cp "$(pwd)/get-docs.php" "$container_id:/opt/bitnami/moodleapp/scripts" 2>/dev/null
+    docker cp "$(pwd)/ws_to_ts_functions.php" "$container_id:/opt/bitnami/moodleapp/scripts" 2>/dev/null
     docker exec "$container_id" php /opt/bitnami/moodleapp/scripts/get-docs.php /bitnami/moodle >$ws_functions_file || true
     if [ "$(wc -l <$ws_functions_file)" -gt 10 ]; then
       echo "TS generated file copied successfully"
