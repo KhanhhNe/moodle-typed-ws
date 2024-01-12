@@ -1,4 +1,4 @@
-/* eslint-disable ts/no-unsafe-argument */
+import { inspect } from 'node:util'
 import has from 'ramda/src/has'
 import type { MoodleClientTypes } from '../data/ws-function-types'
 import { serializeForm } from '../utils/flatten-json'
@@ -23,9 +23,14 @@ function _initializeClient({
       functionName: string,
       params: Parameters<F>[0],
     ) => {
+      const startTime = Date.now()
       if (debug) {
-        console.log(`\nRequest - ${functionName}:`)
-        console.dir(params, { depth: 10, colors: true })
+        console.log(
+          `==> ${functionName}: ${inspect(params, {
+            depth: 10,
+            colors: true,
+          })}`,
+        )
       }
 
       return (await fetch(`${baseUrl}/webservice/rest/server.php`, {
@@ -41,21 +46,24 @@ function _initializeClient({
         }),
       })
         .then(async (res) => {
+          const totalTimeSeconds = ((Date.now() - startTime) / 1000).toFixed(2)
+
           if (res.status >= 400) {
-            console.error(
-              `Error calling ${functionName} - ${res.status} (${res.statusText})`,
-            )
+            const errorMsg = `<== ${functionName} (${totalTimeSeconds}s) [ERROR] - ${res.status} (${res.statusText})`
+            console.error(errorMsg)
             console.error(await res.text())
 
-            throw new Error(
-              `Error calling ${functionName} - ${res.status} (${res.statusText})`,
-            )
+            throw new Error(errorMsg)
           }
 
           const data = await res.json()
           if (debug) {
-            console.log(`\nResponse - ${functionName}:`)
-            console.dir(data, { depth: 10, colors: true })
+            console.log(
+              `<== ${functionName} (${totalTimeSeconds}s): ${inspect(data, {
+                depth: 10,
+                colors: true,
+              })}`,
+            )
           }
 
           return data
@@ -72,7 +80,7 @@ function _initializeClient({
 
 type MoodleClient = ReturnType<typeof _initializeClient>
 
-function callMoodleApi<F extends MoodleFunction>(
+export function callMoodleApi<F extends MoodleFunction>(
   client: MoodleClient,
   funcPath: string[],
   params: object,
