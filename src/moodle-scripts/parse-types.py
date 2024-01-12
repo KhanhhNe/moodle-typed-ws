@@ -93,15 +93,61 @@ for full_func_name in functions:
 
     func_defs = assoc_path(
         [namespace, module, f"/** {comment} */ {func_name_camel}"],
-        f"(params: MoodleClientFunctionTypes.{param}) => Promise<MoodleClientFunctionTypes.{ret}>",
+        f"(params: Prettify<MoodleClientFunctionTypes.{param}>) => Promise<Prettify<MoodleClientFunctionTypes.{ret}>>",
         func_defs,
     )
 
 func_defs_content = json.dumps(func_defs, indent=2).replace('"', "")
 ws_functions_content = f"""
 declare namespace MoodleClientFunctionTypes {{
-    {content}
+
+  /** Structure of warnings returned by WS. */
+  interface CoreWSExternalWarning {{
+    /** Item. */
+    item?: string
+
+    /** Item id. */
+    itemid?: number
+
+    /** The warning code can be used by the client app to implement specific behaviour. */
+    warningcode: string
+
+    /** Untranslated english message to explain the warning. */
+    message: string
+  }}
+
+  /** Structure of files returned by WS. */
+  interface CoreWSExternalFile {{
+    /** Downloadable file url. */
+    fileurl: string
+    /** File name. */
+    filename?: string
+    /** File path. */
+    filepath?: string
+    /** File size. */
+    filesize?: number
+    /** Time modified. */
+    timemodified?: number
+    /** File mime type. */
+    mimetype?: string
+    /** Whether is an external file. */
+    isexternalfile?: number
+    /** The repository type for external files. */
+    repositorytype?: string
+  }}
+
+  {content}
 }}
+
+type Prettify<T> = T extends object
+  ? {{
+      [K in keyof T]: T[K] extends Record<string, unknown>
+        ? Prettify<T[K]>
+        : T[K]
+    }} & {{}}
+  : T extends (infer E)[]
+    ? Prettify<E>[]
+    : T
 
 type MoodleClientTypes = {func_defs_content}
 
