@@ -19,6 +19,8 @@ function _initializeClient({
   const client = () => {}
 
   const utils = {
+    getToken: () => token,
+
     request: async <F extends MoodleFunction>(
       functionName: string,
       params: Parameters<F>[0],
