@@ -62,6 +62,7 @@ with open(ws_functions_list, "w+") as f:
 
 
 func_defs = {}
+flattened_func_defs = {}
 params = re.findall(r"(\S+WSParams)", content)
 returns = re.findall(r"(\S+WSResponse)", content)
 
@@ -91,13 +92,19 @@ for full_func_name in functions:
     )
     comment = comment_match.group(1) if comment_match else ""
 
+    func_def = f"(params: Prettify<MoodleClientFunctionTypes.{param}>) => Promise<Prettify<MoodleClientFunctionTypes.{ret}>>"
     func_defs = assoc_path(
         [namespace, module, f"/** {comment} */ {func_name_camel}"],
-        f"(params: Prettify<MoodleClientFunctionTypes.{param}>) => Promise<Prettify<MoodleClientFunctionTypes.{ret}>>",
+        func_def,
         func_defs,
     )
+    flattened_func_defs[f"'{namespace}.{module}.{func_name_camel}'"] = func_def
 
-func_defs_content = json.dumps(func_defs, indent=2).replace('"', "")
+
+def func_defs_to_type(defs):
+    return json.dumps(defs, indent=2).replace('"', "")
+
+
 ws_functions_content = f"""
 declare namespace MoodleClientFunctionTypes {{
 
@@ -149,9 +156,11 @@ type Prettify<T> = T extends object
     ? Prettify<E>[]
     : T
 
-type MoodleClientTypes = {func_defs_content}
+type MoodleClientTypes = {func_defs_to_type(func_defs)}
 
-export {{ MoodleClientFunctionTypes, type MoodleClientTypes }};
+type MoodleClientFlattenedTypes = {func_defs_to_type(flattened_func_defs)}
+
+export {{ MoodleClientFunctionTypes, type MoodleClientTypes, type MoodleClientFlattenedTypes }};
 """
 
 with open(ws_functions_file, "w+") as f:
